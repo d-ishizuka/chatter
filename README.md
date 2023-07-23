@@ -184,8 +184,54 @@
 
 # つぶやき投稿のAPIと最新のつぶやきを取得するAPIを作る
 ## 30
-- api/routers/posts.jsをauth.jsをベースに変更する
-    - つぶやきの内容を受け取る→なければエラー
+- api/routers/posts.jsをauth.jsをベースに作成する
+    - つぶやきの内容(content)をrequestから受け取る→なければエラー
     - await prisma.post.create()でプリズマのORMを使う
     - res.status(xxx).json(yyy)でresponse設定できる
-- 
+
+## 31
+- フロント側から叩けるようにする
+    - Timeline.tsxから叩けるようにする
+    - handleSubmitでイベントを受け取る関数を作って、formのところにonSubmitで設定する
+    - handleSubmitでpreventEventして処理したいことを書く→/posts/postにリクエストを投げる
+    - server.jsに/posts/postを設定する→postsRouteという名前で、require("./routers/posts")
+        - posts.jsにrouter.post("/post", ...)で設定しているところにリクエストがいく
+        - xxx.tsxとyyy.jsの役割の違いを理解する
+    - 送信内容(content)はuseStateでwatchしておく
+    - 送信後contentの中身を空にする→<textarea>にvalueを設定する必要がある
+
+## 32, 33
+- 投稿(post)したつぶやきを配列に格納して、一覧で表示する準備をする
+- Timeline.tsxにuseStateでlatestPostsを変数として設定する
+- client/src/types.tsというファイルを作成する
+    - export interface PostTypeでPostの型を定義する。すると、UserTypeのinterfaceでposts: Post[]が定義できる(type.tsファイル)
+    - interfaceの名前と、他のファイルで設定されたPostコンポーネントに対して、同一ファイルにimportされたpostという変数名が被ると怒られるのでPostTypeにする
+    - 新しく投稿すると、その新しい投稿をprevPostsに追加するような関数を作成しておく(setLatestPosts)
+        - latestPosts.mapでlatestPostsの中身を一つずつ展開して表示する
+        - keyを設定する必要がある
+    - Post.tsxのコンポーネントにpropsを渡すようにする
+        - 考え方としては、このコンポーネントはユーザーの値が動的に入るべきコンポーネントなので、propsでユーザー情報を受け取る
+            - railsでコンポーネント化するときも、パラメータ渡してたのに近い
+        - propsはPostが入っていて、型はPostType
+        - 現時点ではリロード時に投稿を取ってくる処理がないので、リロードすると空になる→次修正
+
+## 34
+- 最新のつぶやきを10件取得するAPIを作成する(一旦、post.jsに書く)
+- 取得の場合は、router.getになる
+- パスを/get_latest_postにする
+- await prisma.post.findMany({ take: 10, orderBy: { createdAt: "desc"}})みたいな感じ
+
+## 35
+- タイムライン読み込み時に最新投稿取得のAPIを叩いてみる
+- useEffect(() => const fetchLatestPosts = async () ... 
+    - await apiClient.get("/posts/get_latest_post"))で最新データを取得
+    - setLatestPostsでlatestPostsを更新する→配列に値が入って表示できるようになる
+    - 日時が読みづらいので、コンポーネントのところで、new DateでtoLocalString()に変換
+## 36
+- つぶやいた人の名前を取得できるようにする
+    - postのモデルの中には、userのidは入っているがnameは入っていない
+    - postとuserはuser_idが外部キーになるようにリレーションを貼ってあるので、prisma.post.findManyするところで、userをincludeしてあげれば良い
+        - include: {user: true}で取れる
+    - これだけだと、既存のpostをとる時にincludeされるだけなので、newPostを作成する時にもincludeしてあげる
+
+## 37
