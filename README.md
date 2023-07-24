@@ -235,3 +235,19 @@
     - これだけだと、既存のpostをとる時にincludeされるだけなので、newPostを作成する時にもincludeしてあげる
 
 ## 37
+- ローカルストレージにトークンがある人だけ認証許可のヘッダーをつけて、ポストとかできるようにする
+- まずは、headerにクライアント側が入れて送れるようにする
+- client/src/contest/auth.tsxでuseEffectを使うことで、読み込み時に1回だけ発火する
+- apiClient.defaults.headers["Authorizaiton"]=　`Bearer ${token}`...にすると、headerの中に入る
+
+## 38
+- バックエンド側で、authorizationの値を確認できるようにするため、それ用のミドルウェアを作成する
+- ミドルウェアを作成したらpostなどの処理に挟んで認可の確認をする
+- isAuthenticated.jsを作成する
+    - const token = req.headers.authorizaiton?.split(" ")[1] ← Bearerの文字を消す
+    - jwt.verifyすると、jwtがデコードできるので、デコードしたときに、jwt用のsecret_keyと一致すれば?ok(何でもってokにしてるんだろ)
+    - okなら、req.userId = decoded.idにして、postの時にuserIdを教えてあげる
+    - next()を使うと、これが通ったらというmiddlewareにできる
+
+## 39
+- supabaseをいちいちログインしなくても、npx prisma studioを実行するとローカルでも確認できる
