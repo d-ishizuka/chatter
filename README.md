@@ -264,4 +264,35 @@
         - passwordを返すと脆弱性になるので意図的に返さない
 
 ## 43
+- Next.js側でリロードするたびにログインユーザーの取得APIを叩く
+- useEffectのタイミングつまりページがリロードされたタイミングでAPIを叩く
+    - auth.tsxのAuthProvider
+    - tokenがローカルストレージに存在した場合に処理が走るように変更
+        - 取得できたら、user変数に代入（useStateを使って実装[user, setUser]）
+        - userをアプリケーション全体で使用するためにvalueの中に入れておく
+        - loginのタイミングでも取得する
+    - server.js側で、usersRouteをrequireしつつ、app.useでパスとusersRouteを紐づける
+
+## 44
+- nabvarでuser情報を取得できているか確認
+- Navbar.tsxでuseAuth()を呼び出す
+- userが存在していたらプロフィールボタンにリンクを貼って遷移できるようにする
+- ついでにログアウトボタンも実装する
+
+## 45
+- ログアウト機能の実装
+- 1.localStorageからauth_tokenをremoveする
+- 2.user変数の状態を変更する(setUserを使う)
+- 3.headerからAuthorizationを削除する
+
+## 46
+- ログアウトしてログインしたのにうまくいかない理由を確認する
+- isAuthenticatedとかで正しいuser_idが取れてないのか？？
+- 再度ログインしても前回のユーザーが残っちゃう
+
+## 47
+- 原因は、loginの処理の中で、headerにAuthorizationを設定し直すのを忘れていた
+
+## 48
+- プロフィール用のモデルを作る
 - 
