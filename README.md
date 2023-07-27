@@ -289,10 +289,48 @@
 - ログアウトしてログインしたのにうまくいかない理由を確認する
 - isAuthenticatedとかで正しいuser_idが取れてないのか？？
 - 再度ログインしても前回のユーザーが残っちゃう
-
-## 47
 - 原因は、loginの処理の中で、headerにAuthorizationを設定し直すのを忘れていた
 
-## 48
+## 4７
 - プロフィール用のモデルを作る
-- 
+- schema.prismaに追加する
+    - id : 主キー
+    - bio, imageUrl
+    - userId: リレーション設定する
+    - Userモデル側にもprofileを設定
+- npx prisma migrate devでマイグレーション
+
+## 48
+- auth.jsでユーザー作成しているところがあるのでprofileのattributeのところでcreateする
+- supabaseは１週間ログインしないと動かなくなるので注意
+
+## 49
+- identiconを使ってユーザーのアイコンを自動で生成する
+    - npm install identicon.js --save
+- api/utils/generateIdenticon.jsでidenticon用の関数を作成
+    - cryptoを使ってinputデータに対してhashを作成
+- module.exportsしてどこからでも参照できるようにする
+
+## 50
+- アイコンを生成する
+    - auth.jsのユーザー作成のタイミングでemailを渡してhash化及び画像生成する
+- api側でprofileをincludeすることでフロントエンド側でuser情報の取得に合わせてprofile情報も取得でき、アイコンのurlが取得できる
+- front側でもUserとProfileの型を変更する
+
+## 51
+- 画像のパスが通っていない問題を解決する
+- includeの仕方が間違っていた
+    - 正しくは、include → author → include → profile: true
+
+## 52
+- プロフィール専用ページを作成する
+- profile/{userId}
+- Next.jsの動的ルーティング
+    - pages/profile/[userId].tsx
+    - 上記のようなファイルを作るとパスが飛べるようになる
+
+## 53
+- 閲覧ユーザーのプロフィール情報を取得するAPIを作成する
+- user.jsファイル
+    - getでパスに "/profile/:userId"を設定すると、profile/1に飛んだ時に、userIdがreq.paramsとかで取得できるようになる
+    - 
