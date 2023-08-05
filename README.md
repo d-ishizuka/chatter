@@ -333,4 +333,74 @@
 - 閲覧ユーザーのプロフィール情報を取得するAPIを作成する
 - user.jsファイル
     - getでパスに "/profile/:userId"を設定すると、profile/1に飛んだ時に、userIdがreq.paramsとかで取得できるようになる
-    - 
+    - userIDが文字列で取れるので、prismaで検索する際には整数に変換する
+    - thunder clientでポストリクエストして試してみる
+    - npx prisma studioでローカルホストでDBの状態が見れる
+
+## 54
+- Front側でユーザーのプロフィールを取得して表示する
+- [userId].tsxにあるコンポーネントを修正
+- profileについてはSSRで作成する
+    - 理由：
+        - SSGを使うのは、ブログ記事やまとめサイトなど更新頻度が低い場合に使われる
+        - SSRを使うのは、SNSのような情報の更新が頻繁な場合
+        - useEffectのようにCSR(Client side rendering)を使ってしまうと、SEO的に微妙
+- getServerSideProps関数を用意して、関数内でcontext.queryでクエリパラメータを取得して、apiClient.get(`/users/profile/${userId}`)という感じで取れる
+- returnでpropsの中に、profileのresponseのdataを返す
+- userProfileで定義していたコンポーネントの引数にpropsとしてprofile情報を渡してあげることでコンポーネント内の表示をユーザーに応じて変えることができる
+
+## 55
+- アイコンをクリックすると、そのユーザーのプロフィールに遷移できるようにする
+- アイコンのところにLinkを足してhrefで遷移先を足すだけ
+- post.authorIdでuseIdが取れる
+
+## 56
+- ユーザーのページに遷移したら、そのユーザーの投稿履歴が見れるようにする
+- posts.jsを修正していく(APIを修正して、エンドポイントを生やしている)
+    - router.get("/:userId", async(req, res)...)
+    - userIdがreq .paramsで取得できる
+    - userIdでprisma.post.findMnayでuserIdを指定することで投稿の一覧が見れる
+    - thunder clientでテストできる
+
+## 57
+- 一覧情報をAPIから取得してフロントで表示できるようにする
+- [userId].tsxを修正()
+- posts/${userId}でアクセスできるので投稿一覧を取得
+- 先ほどのProfileデータとともに、ポストデータもコンポーネントの引数に与える
+- postsは配列になっているので、post.mapで一つずつ取り出して、ループさせてコンポーネントを修正
+- Navbarでプロフィールをクリックしてもうまくいかなかったのは、単純にパスミスってたから
+
+## 58
+- ローカルストレージを使った認証はあまりやらない方が良い
+    - supabaseのauthenticationを使ったり
+    - firebase authenticationを使ったり
+- 追加
+    - プロフィールの編集機能
+    - いいね機能
+    - フォロー・フォロワー機能
+    - AWSでのデプロイ
+
+## 59
+- デプロイ
+　- Githubにレポジトリ作る
+    - clientの方とserverの方で別のレポジトリを作成する
+## 60
+- clientをデプロイする
+- vercelにアカウントを作って、githubのアカウントとレポジトリをimportする
+- buildすると、フロントのindex.tsの画面だけは見えるが、バックエンドに疎通できないのでエラーになる
+
+## 61
+- APIをrenderでデプロイする
+- アカウントを作成する
+- websiteのところから、githubのアカウントとレポジトリを設定できる
+- start commandなどを指定する
+    - package.jsonにサーバー起動のコマンドなどを指定する
+- envファイルの設定をする
+    - DATABASEURLとか、SECRET＿KEYとか
+- endpointが5000でしてあって、renderが勝手に10000を指定するはずでエラーになるかと思いきやならず
+    - やるなら、const PORT = process.env.PORT || 10000;とかでいけそう
+
+## 62
+- フロント側で指定しているapiのrootを変更する
+- renderのサイトにURLが出るので、baseURLにしたいが、そのまま書いてgithubにあげたくないので、process.envにNEXT_PUBLIC_API_BASEURLを追加して指定
+- /apiを付け加えるのを忘れない
